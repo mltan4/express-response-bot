@@ -14,7 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reply_history: {
+        Row: {
+          chosen_variant_index: number | null
+          created_at: string
+          id: string
+          incoming_message: string | null
+          intent: string | null
+          length: string | null
+          mode: string
+          platform: string | null
+          tone: string | null
+          user_id: string
+          variants: Json
+          voice_profile_id: string | null
+        }
+        Insert: {
+          chosen_variant_index?: number | null
+          created_at?: string
+          id?: string
+          incoming_message?: string | null
+          intent?: string | null
+          length?: string | null
+          mode: string
+          platform?: string | null
+          tone?: string | null
+          user_id: string
+          variants: Json
+          voice_profile_id?: string | null
+        }
+        Update: {
+          chosen_variant_index?: number | null
+          created_at?: string
+          id?: string
+          incoming_message?: string | null
+          intent?: string | null
+          length?: string | null
+          mode?: string
+          platform?: string | null
+          tone?: string | null
+          user_id?: string
+          variants?: Json
+          voice_profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reply_history_voice_profile_id_fkey"
+            columns: ["voice_profile_id"]
+            isOneToOne: false
+            referencedRelation: "voice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_profiles: {
+        Row: {
+          created_at: string
+          custom_instructions: string | null
+          default_platform: string | null
+          id: string
+          is_default: boolean
+          name: string
+          preset: string | null
+          samples: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_instructions?: string | null
+          default_platform?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          preset?: string | null
+          samples?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_instructions?: string | null
+          default_platform?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          preset?: string | null
+          samples?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
