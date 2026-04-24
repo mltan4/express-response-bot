@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -40,13 +41,15 @@ type VoiceProfile = { id: string; name: string; preset: string | null; samples: 
 
 export default function Generate() {
   const { user } = useAuth();
-  const [mode, setMode] = useState<"quick" | "thread" | "outreach">("quick");
+  const [mode, setMode] = useState<"quick" | "thread" | "outreach" | "fix">("outreach");
   const [platform, setPlatform] = useState("linkedin");
   const [incoming, setIncoming] = useState("");
   const [intent, setIntent] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [recipientLinkedinUrl, setRecipientLinkedinUrl] = useState("");
   const [goal, setGoal] = useState("");
   const [outreachContext, setOutreachContext] = useState("");
+  const [draft, setDraft] = useState("");
   const [tone, setTone] = useState("professional");
   const [length, setLength] = useState("medium");
   const [voiceProfileId, setVoiceProfileId] = useState<string>("none");
@@ -78,6 +81,10 @@ export default function Generate() {
       toast.error("Describe what you want from this outreach.");
       return;
     }
+    if (mode === "fix" && !draft.trim()) {
+      toast.error("Paste the draft you want to fix.");
+      return;
+    }
 
     setLoading(true);
     setVariants([]);
@@ -89,8 +96,10 @@ export default function Generate() {
           incomingMessage: incoming,
           intent,
           recipient,
+          recipientLinkedinUrl,
           goal,
           context: outreachContext,
+          draft,
           tone, length,
           voiceProfile,
         },
@@ -99,11 +108,20 @@ export default function Generate() {
       if (data?.error) throw new Error(data.error);
       setVariants(data.variants);
 
+      const historyIncoming =
+        mode === "outreach" ? (outreachContext || null)
+        : mode === "fix" ? draft
+        : (incoming || null);
+      const historyIntent =
+        mode === "outreach"
+          ? `To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal}`
+          : (intent || null);
+
       await supabase.from("reply_history").insert({
         user_id: user!.id,
         platform, mode,
-        incoming_message: mode === "outreach" ? (outreachContext || null) : (incoming || null),
-        intent: mode === "outreach" ? `To: ${recipient || "—"} · Goal: ${goal}` : (intent || null),
+        incoming_message: historyIncoming,
+        intent: historyIntent,
         tone, length,
         voice_profile_id: voiceProfile?.id ?? null,
         variants: data.variants,
@@ -126,22 +144,29 @@ export default function Generate() {
     <div className="container max-w-5xl py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight">
-          {mode === "outreach" ? "Craft an outreach message" : "Generate a reply"}
+          {mode === "outreach"
+            ? "Craft an outreach message"
+            : mode === "fix"
+            ? "Fix a draft"
+            : "Generate a reply"}
         </h1>
         <p className="text-muted-foreground mt-1">
           {mode === "outreach"
             ? "Tell us who you're reaching out to and what you want — get three variants."
+            : mode === "fix"
+            ? "Paste your draft — get three improved versions in your voice."
             : "Paste a message, pick your tone, get three variants."}
         </p>
       </div>
 
       <Card className="p-6 shadow-soft">
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "quick" | "thread" | "outreach")}>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
             <TabsList>
+              <TabsTrigger value="outreach">Outreach</TabsTrigger>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
               <TabsTrigger value="thread">Thread + intent</TabsTrigger>
-              <TabsTrigger value="outreach">Outreach</TabsTrigger>
+              <TabsTrigger value="fix">Fix a draft</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex-1" />
@@ -172,6 +197,17 @@ export default function Generate() {
               />
             </div>
             <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Linkedin className="h-3.5 w-3.5" /> Their LinkedIn URL (optional)
+              </Label>
+              <Input
+                type="url"
+                value={recipientLinkedinUrl}
+                onChange={(e) => setRecipientLinkedinUrl(e.target.value)}
+                placeholder="https://www.linkedin.com/in/janedoe"
+              />
+            </div>
+            <div className="space-y-2">
               <Label>What do you want from this message?</Label>
               <Textarea
                 value={goal}
@@ -186,6 +222,27 @@ export default function Generate() {
                 value={outreachContext}
                 onChange={(e) => setOutreachContext(e.target.value)}
                 placeholder="e.g. Loved their recent talk on design systems; we just shipped a similar product"
+                className="min-h-[80px] resize-none"
+              />
+            </div>
+          </div>
+        ) : mode === "fix" ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Your draft</Label>
+              <Textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Paste the message you've written and want to improve…"
+                className="min-h-[160px] resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>What should we fix or emphasize? (optional)</Label>
+              <Textarea
+                value={intent}
+                onChange={(e) => setIntent(e.target.value)}
+                placeholder="e.g. Make it shorter and less formal, keep the ask clear"
                 className="min-h-[80px] resize-none"
               />
             </div>
@@ -267,7 +324,7 @@ export default function Generate() {
         <div className="mt-6 flex justify-end">
           <Button onClick={handleGenerate} disabled={loading} size="lg" className="gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {loading ? "Generating…" : mode === "outreach" ? "Generate 3 messages" : "Generate 3 replies"}
+            {loading ? "Generating…" : mode === "outreach" ? "Generate 3 messages" : mode === "fix" ? "Rewrite 3 versions" : "Generate 3 replies"}
           </Button>
         </div>
       </Card>

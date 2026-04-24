@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, platform, incomingMessage, intent, tone, length, voiceProfile, recipient, goal, context: outreachContext } = await req.json();
+    const { mode, platform, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -48,12 +48,15 @@ Deno.serve(async (req) => {
     }
 
     const isOutreach = mode === "outreach";
+    const isFix = mode === "fix";
 
-    const systemPrompt = `You are a ${isOutreach ? "cold outreach" : "reply"} assistant. Generate exactly 3 distinct ${isOutreach ? "outreach message" : "reply"} variants for the user.
+    const kind = isOutreach ? "cold outreach message" : isFix ? "improved draft" : "reply";
+
+    const systemPrompt = `You are a ${isOutreach ? "cold outreach" : isFix ? "message editing" : "reply"} assistant. Generate exactly 3 distinct ${kind} variants for the user.
 
 Platform context: ${platformGuide}
 Tone: ${toneGuide}
-Length: each ${isOutreach ? "message" : "reply"} should be ${lengthGuide}.${voiceContext}
+Length: each variant should be ${lengthGuide}.${voiceContext}
 
 Rules:
 - Output ONLY through the provided tool, never plain text.
@@ -62,13 +65,22 @@ Rules:
 ${isOutreach
   ? `- This is a COLD message — the recipient does not know the sender. Lead with relevance or a specific hook, not generic flattery.
 - Be specific. Reference the recipient or their context when provided.
+- If a LinkedIn URL is provided, treat it as a signal that this is a LinkedIn outreach — keep tone aligned with that platform.
 - End with a clear, low-friction call to action.
 - Match the language the user wrote their goal/context in.`
+  : isFix
+  ? `- Preserve the user's original intent, key facts, names, numbers, and links — do not invent new information.
+- Improve clarity, flow, tone, grammar, and structure. Remove filler.
+- Keep the user's voice; do not over-polish into something they wouldn't say.
+- Match the language of the original draft.`
   : `- Match the language of the incoming message.`}`;
 
     let userPrompt: string;
     if (isOutreach) {
-      userPrompt = `Who I'm reaching out to:\n${recipient || "(not specified)"}\n\nWhat I want from this message (goal):\n${goal}\n\n${outreachContext ? `Background / context I can reference:\n${outreachContext}` : ""}`;
+      const recipientBlock = [recipient, recipientLinkedinUrl ? `LinkedIn: ${recipientLinkedinUrl}` : ""].filter(Boolean).join("\n");
+      userPrompt = `Who I'm reaching out to:\n${recipientBlock || "(not specified)"}\n\nWhat I want from this message (goal):\n${goal}\n\n${outreachContext ? `Background / context I can reference:\n${outreachContext}` : ""}`;
+    } else if (isFix) {
+      userPrompt = `Here is my draft message — rewrite it into 3 improved variants:\n\n"""${draft}"""\n\n${intent ? `Notes on what to fix or emphasize: ${intent}` : ""}`;
     } else if (mode === "thread") {
       userPrompt = `Conversation context:\n${incomingMessage || "(none provided)"}\n\nWhat I want to convey:\n${intent}`;
     } else {
