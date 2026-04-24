@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -40,13 +41,15 @@ type VoiceProfile = { id: string; name: string; preset: string | null; samples: 
 
 export default function Generate() {
   const { user } = useAuth();
-  const [mode, setMode] = useState<"quick" | "thread" | "outreach">("quick");
+  const [mode, setMode] = useState<"quick" | "thread" | "outreach" | "fix">("outreach");
   const [platform, setPlatform] = useState("linkedin");
   const [incoming, setIncoming] = useState("");
   const [intent, setIntent] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [recipientLinkedinUrl, setRecipientLinkedinUrl] = useState("");
   const [goal, setGoal] = useState("");
   const [outreachContext, setOutreachContext] = useState("");
+  const [draft, setDraft] = useState("");
   const [tone, setTone] = useState("professional");
   const [length, setLength] = useState("medium");
   const [voiceProfileId, setVoiceProfileId] = useState<string>("none");
@@ -76,6 +79,10 @@ export default function Generate() {
     }
     if (mode === "outreach" && !goal.trim()) {
       toast.error("Describe what you want from this outreach.");
+      return;
+    }
+    if (mode === "fix" && !draft.trim()) {
+      toast.error("Paste the draft you want to fix.");
       return;
     }
 
