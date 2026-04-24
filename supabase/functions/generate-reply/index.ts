@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, platform, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft } = await req.json();
+    const { mode, platform, hasDraft, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -48,11 +48,12 @@ Deno.serve(async (req) => {
     }
 
     const isOutreach = mode === "outreach";
-    const isFix = mode === "fix";
+    const kindNoun = isOutreach ? "outreach message" : "reply";
+    const assistantRole = hasDraft
+      ? `${isOutreach ? "cold outreach " : ""}message editing`
+      : isOutreach ? "cold outreach" : "reply";
 
-    const kind = isOutreach ? "cold outreach message" : isFix ? "improved draft" : "reply";
-
-    const systemPrompt = `You are a ${isOutreach ? "cold outreach" : isFix ? "message editing" : "reply"} assistant. Generate exactly 3 distinct ${kind} variants for the user.
+    const systemPrompt = `You are a ${assistantRole} assistant. Generate exactly 3 distinct ${hasDraft ? `improved ${kindNoun}` : kindNoun} variants for the user.
 
 Platform context: ${platformGuide}
 Tone: ${toneGuide}
@@ -68,24 +69,29 @@ ${isOutreach
 - If a LinkedIn URL is provided, treat it as a signal that this is a LinkedIn outreach — keep tone aligned with that platform.
 - End with a clear, low-friction call to action.
 - Match the language the user wrote their goal/context in.`
-  : isFix
-  ? `- Preserve the user's original intent, key facts, names, numbers, and links — do not invent new information.
+  : `- Match the language of the incoming message.`}
+${hasDraft
+  ? `\nThe user has provided a DRAFT they wrote themselves. Your job is to rewrite it:
+- Preserve the user's original intent, key facts, names, numbers, and links — do not invent new information.
 - Improve clarity, flow, tone, grammar, and structure. Remove filler.
 - Keep the user's voice; do not over-polish into something they wouldn't say.
+- Use the surrounding context (recipient, goal, incoming message, etc.) only as background — the draft is the source of truth.
 - Match the language of the original draft.`
-  : `- Match the language of the incoming message.`}`;
+  : ""}`;
 
-    let userPrompt: string;
+    let contextBlock: string;
     if (isOutreach) {
       const recipientBlock = [recipient, recipientLinkedinUrl ? `LinkedIn: ${recipientLinkedinUrl}` : ""].filter(Boolean).join("\n");
-      userPrompt = `Who I'm reaching out to:\n${recipientBlock || "(not specified)"}\n\nWhat I want from this message (goal):\n${goal}\n\n${outreachContext ? `Background / context I can reference:\n${outreachContext}` : ""}`;
-    } else if (isFix) {
-      userPrompt = `Here is my draft message — rewrite it into 3 improved variants:\n\n"""${draft}"""\n\n${intent ? `Notes on what to fix or emphasize: ${intent}` : ""}`;
+      contextBlock = `Who I'm reaching out to:\n${recipientBlock || "(not specified)"}\n\nWhat I want from this message (goal):\n${goal || "(not specified)"}\n\n${outreachContext ? `Background / context I can reference:\n${outreachContext}` : ""}`;
     } else if (mode === "thread") {
-      userPrompt = `Conversation context:\n${incomingMessage || "(none provided)"}\n\nWhat I want to convey:\n${intent}`;
+      contextBlock = `Conversation context:\n${incomingMessage || "(none provided)"}\n\nWhat I want to convey:\n${intent || "(not specified)"}`;
     } else {
-      userPrompt = `Message I received:\n${incomingMessage}\n\n${intent ? `Additional intent: ${intent}` : "Generate natural replies."}`;
+      contextBlock = `Message I received:\n${incomingMessage || "(none provided)"}\n\n${intent ? `Additional intent: ${intent}` : ""}`;
     }
+
+    const userPrompt = hasDraft
+      ? `${contextBlock}\n\n---\n\nMy draft — rewrite this into 3 improved variants:\n"""${draft}"""`
+      : contextBlock;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
