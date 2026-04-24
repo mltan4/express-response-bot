@@ -74,6 +74,10 @@ export default function Generate() {
       toast.error("Describe what you want to convey.");
       return;
     }
+    if (mode === "outreach" && !goal.trim()) {
+      toast.error("Describe what you want from this outreach.");
+      return;
+    }
 
     setLoading(true);
     setVariants([]);
@@ -84,6 +88,9 @@ export default function Generate() {
           mode, platform,
           incomingMessage: incoming,
           intent,
+          recipient,
+          goal,
+          context: outreachContext,
           tone, length,
           voiceProfile,
         },
@@ -95,8 +102,8 @@ export default function Generate() {
       await supabase.from("reply_history").insert({
         user_id: user!.id,
         platform, mode,
-        incoming_message: incoming || null,
-        intent: intent || null,
+        incoming_message: mode === "outreach" ? (outreachContext || null) : (incoming || null),
+        intent: mode === "outreach" ? `To: ${recipient || "—"} · Goal: ${goal}` : (intent || null),
         tone, length,
         voice_profile_id: voiceProfile?.id ?? null,
         variants: data.variants,
