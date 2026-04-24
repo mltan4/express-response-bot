@@ -13,7 +13,7 @@ const Index = () => {
             <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-soft">
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold tracking-tight">Replyly</span>
+            <span className="font-semibold tracking-tight">ReplyKit</span>
           </Link>
           <nav className="flex items-center gap-3">
             {user ? (

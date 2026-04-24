@@ -66,7 +66,7 @@ export default function Auth() {
           <div className="h-9 w-9 rounded-lg bg-gradient-primary flex items-center justify-center shadow-soft">
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-semibold text-lg tracking-tight">Replyly</span>
+          <span className="font-semibold text-lg tracking-tight">ReplyKit</span>
         </Link>
         <Card className="p-6 shadow-elevated">
           <Tabs defaultValue="signin">
