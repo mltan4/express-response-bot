@@ -47,21 +47,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    const systemPrompt = `You are a reply assistant. Generate exactly 3 distinct reply variants for the user.
+    const isOutreach = mode === "outreach";
+
+    const systemPrompt = `You are a ${isOutreach ? "cold outreach" : "reply"} assistant. Generate exactly 3 distinct ${isOutreach ? "outreach message" : "reply"} variants for the user.
 
 Platform context: ${platformGuide}
 Tone: ${toneGuide}
-Length: each reply should be ${lengthGuide}.${voiceContext}
+Length: each ${isOutreach ? "message" : "reply"} should be ${lengthGuide}.${voiceContext}
 
 Rules:
 - Output ONLY through the provided tool, never plain text.
 - Make the 3 variants meaningfully different (different angle, opener, or structure) — not minor wording tweaks.
-- Never use clichés like "I hope this email finds you well" or "circle back" unless the user's voice samples use them.
-- Match the language of the incoming message.`;
+- Never use clichés like "I hope this email finds you well", "circle back", or "quick question" unless the user's voice samples use them.
+${isOutreach
+  ? `- This is a COLD message — the recipient does not know the sender. Lead with relevance or a specific hook, not generic flattery.
+- Be specific. Reference the recipient or their context when provided.
+- End with a clear, low-friction call to action.
+- Match the language the user wrote their goal/context in.`
+  : `- Match the language of the incoming message.`}`;
 
-    const userPrompt = mode === "thread"
-      ? `Conversation context:\n${incomingMessage || "(none provided)"}\n\nWhat I want to convey:\n${intent}`
-      : `Message I received:\n${incomingMessage}\n\n${intent ? `Additional intent: ${intent}` : "Generate natural replies."}`;
+    let userPrompt: string;
+    if (isOutreach) {
+      userPrompt = `Who I'm reaching out to:\n${recipient || "(not specified)"}\n\nWhat I want from this message (goal):\n${goal}\n\n${outreachContext ? `Background / context I can reference:\n${outreachContext}` : ""}`;
+    } else if (mode === "thread") {
+      userPrompt = `Conversation context:\n${incomingMessage || "(none provided)"}\n\nWhat I want to convey:\n${intent}`;
+    } else {
+      userPrompt = `Message I received:\n${incomingMessage}\n\n${intent ? `Additional intent: ${intent}` : "Generate natural replies."}`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
