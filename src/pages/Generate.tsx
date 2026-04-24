@@ -96,8 +96,10 @@ export default function Generate() {
           incomingMessage: incoming,
           intent,
           recipient,
+          recipientLinkedinUrl,
           goal,
           context: outreachContext,
+          draft,
           tone, length,
           voiceProfile,
         },
@@ -106,11 +108,20 @@ export default function Generate() {
       if (data?.error) throw new Error(data.error);
       setVariants(data.variants);
 
+      const historyIncoming =
+        mode === "outreach" ? (outreachContext || null)
+        : mode === "fix" ? draft
+        : (incoming || null);
+      const historyIntent =
+        mode === "outreach"
+          ? `To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal}`
+          : (intent || null);
+
       await supabase.from("reply_history").insert({
         user_id: user!.id,
         platform, mode,
-        incoming_message: mode === "outreach" ? (outreachContext || null) : (incoming || null),
-        intent: mode === "outreach" ? `To: ${recipient || "—"} · Goal: ${goal}` : (intent || null),
+        incoming_message: historyIncoming,
+        intent: historyIntent,
         tone, length,
         voice_profile_id: voiceProfile?.id ?? null,
         variants: data.variants,
