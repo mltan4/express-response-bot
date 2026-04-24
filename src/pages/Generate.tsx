@@ -324,7 +324,7 @@ export default function Generate() {
         <div className="mt-6 flex justify-end">
           <Button onClick={handleGenerate} disabled={loading} size="lg" className="gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {loading ? "Generating…" : mode === "outreach" ? "Generate 3 messages" : "Generate 3 replies"}
+            {loading ? "Generating…" : mode === "outreach" ? "Generate 3 messages" : mode === "fix" ? "Rewrite 3 versions" : "Generate 3 replies"}
           </Button>
         </div>
       </Card>
