@@ -41,7 +41,8 @@ type VoiceProfile = { id: string; name: string; preset: string | null; samples: 
 
 export default function Generate() {
   const { user } = useAuth();
-  const [mode, setMode] = useState<"quick" | "thread" | "outreach" | "fix">("outreach");
+  const [mode, setMode] = useState<"quick" | "thread" | "outreach">("outreach");
+  const [hasDraft, setHasDraft] = useState(false);
   const [platform, setPlatform] = useState("linkedin");
   const [incoming, setIncoming] = useState("");
   const [intent, setIntent] = useState("");
@@ -69,21 +70,23 @@ export default function Generate() {
   }, [user]);
 
   const handleGenerate = async () => {
-    if (mode === "quick" && !incoming.trim()) {
-      toast.error("Paste the message you want to reply to.");
-      return;
-    }
-    if (mode === "thread" && !intent.trim()) {
-      toast.error("Describe what you want to convey.");
-      return;
-    }
-    if (mode === "outreach" && !goal.trim()) {
-      toast.error("Describe what you want from this outreach.");
-      return;
-    }
-    if (mode === "fix" && !draft.trim()) {
+    if (hasDraft && !draft.trim()) {
       toast.error("Paste the draft you want to fix.");
       return;
+    }
+    if (!hasDraft) {
+      if (mode === "quick" && !incoming.trim()) {
+        toast.error("Paste the message you want to reply to.");
+        return;
+      }
+      if (mode === "thread" && !intent.trim()) {
+        toast.error("Describe what you want to convey.");
+        return;
+      }
+      if (mode === "outreach" && !goal.trim()) {
+        toast.error("Describe what you want from this outreach.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -93,6 +96,7 @@ export default function Generate() {
       const { data, error } = await supabase.functions.invoke("generate-reply", {
         body: {
           mode, platform,
+          hasDraft,
           incomingMessage: incoming,
           intent,
           recipient,
@@ -109,17 +113,15 @@ export default function Generate() {
       setVariants(data.variants);
 
       const historyIncoming =
-        mode === "outreach" ? (outreachContext || null)
-        : mode === "fix" ? draft
-        : (incoming || null);
+        mode === "outreach" ? (outreachContext || null) : (incoming || null);
       const historyIntent =
         mode === "outreach"
-          ? `To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal}`
-          : (intent || null);
+          ? `${hasDraft ? "[fix draft] " : ""}To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal || "—"}`
+          : `${hasDraft ? "[fix draft] " : ""}${intent || ""}` || null;
 
       await supabase.from("reply_history").insert({
         user_id: user!.id,
-        platform, mode,
+        platform, mode: hasDraft ? `${mode}+fix` : mode,
         incoming_message: historyIncoming,
         intent: historyIntent,
         tone, length,
