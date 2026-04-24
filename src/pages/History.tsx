@@ -27,7 +27,7 @@ export default function History() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("reply_history").select("*").order("created_at", { ascending: false }).limit(50);
-    setRows((data ?? []) as Row[]);
+    setRows((data ?? []) as unknown as Row[]);
     setLoading(false);
   };
   useEffect(() => { if (user) load(); }, [user]);
