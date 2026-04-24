@@ -146,17 +146,13 @@ export default function Generate() {
     <div className="container max-w-5xl py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight">
-          {mode === "outreach"
-            ? "Craft an outreach message"
-            : mode === "fix"
-            ? "Fix a draft"
-            : "Generate a reply"}
+          {mode === "outreach" ? "Craft an outreach message" : "Generate a reply"}
         </h1>
         <p className="text-muted-foreground mt-1">
-          {mode === "outreach"
+          {hasDraft
+            ? "We'll rewrite your draft into 3 polished variants using the context below."
+            : mode === "outreach"
             ? "Tell us who you're reaching out to and what you want — get three variants."
-            : mode === "fix"
-            ? "Paste your draft — get three improved versions in your voice."
             : "Paste a message, pick your tone, get three variants."}
         </p>
       </div>
@@ -168,7 +164,6 @@ export default function Generate() {
               <TabsTrigger value="outreach">Outreach</TabsTrigger>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
               <TabsTrigger value="thread">Thread + intent</TabsTrigger>
-              <TabsTrigger value="fix">Fix a draft</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex-1" />
@@ -228,27 +223,6 @@ export default function Generate() {
               />
             </div>
           </div>
-        ) : mode === "fix" ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Your draft</Label>
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Paste the message you've written and want to improve…"
-                className="min-h-[160px] resize-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>What should we fix or emphasize? (optional)</Label>
-              <Textarea
-                value={intent}
-                onChange={(e) => setIntent(e.target.value)}
-                placeholder="e.g. Make it shorter and less formal, keep the ask clear"
-                className="min-h-[80px] resize-none"
-              />
-            </div>
-          </div>
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -271,6 +245,34 @@ export default function Generate() {
             </div>
           </div>
         )}
+
+        {/* Fix-a-draft section, available in every mode */}
+        <div className="mt-6 rounded-lg border border-dashed border-border bg-muted/30 p-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasDraft}
+              onChange={(e) => setHasDraft(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-input accent-primary"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium">I already have a draft — fix it</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                We'll rewrite your draft into 3 improved variants, using the {mode === "outreach" ? "recipient and goal" : "context"} above as background.
+              </div>
+            </div>
+          </label>
+          {hasDraft && (
+            <div className="mt-3">
+              <Textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Paste your draft here…"
+                className="min-h-[140px] resize-none bg-background"
+              />
+            </div>
+          )}
+        </div>
 
         <div className="grid sm:grid-cols-3 gap-4 mt-6">
           <div className="space-y-2">
