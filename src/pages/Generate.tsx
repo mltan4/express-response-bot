@@ -125,16 +125,23 @@ export default function Generate() {
   return (
     <div className="container max-w-5xl py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">Generate a reply</h1>
-        <p className="text-muted-foreground mt-1">Paste a message, pick your tone, get three variants.</p>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {mode === "outreach" ? "Craft an outreach message" : "Generate a reply"}
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {mode === "outreach"
+            ? "Tell us who you're reaching out to and what you want — get three variants."
+            : "Paste a message, pick your tone, get three variants."}
+        </p>
       </div>
 
       <Card className="p-6 shadow-soft">
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "quick" | "thread")}>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "quick" | "thread" | "outreach")}>
             <TabsList>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
               <TabsTrigger value="thread">Thread + intent</TabsTrigger>
+              <TabsTrigger value="outreach">Outreach</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex-1" />
@@ -153,26 +160,58 @@ export default function Generate() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{mode === "quick" ? "Message you received" : "Conversation context (optional)"}</Label>
-            <Textarea
-              value={incoming}
-              onChange={(e) => setIncoming(e.target.value)}
-              placeholder={mode === "quick" ? "Paste the LinkedIn message, email, DM…" : "Paste the thread for context…"}
-              className="min-h-[120px] resize-none"
-            />
+        {mode === "outreach" ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Who are you reaching out to?</Label>
+              <Textarea
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                placeholder="e.g. Jane Doe, Head of Design at Acme — we met briefly at Config last year"
+                className="min-h-[80px] resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>What do you want from this message?</Label>
+              <Textarea
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="e.g. Book a 20-min intro call to discuss a partnership"
+                className="min-h-[80px] resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Background or hook (optional)</Label>
+              <Textarea
+                value={outreachContext}
+                onChange={(e) => setOutreachContext(e.target.value)}
+                placeholder="e.g. Loved their recent talk on design systems; we just shipped a similar product"
+                className="min-h-[80px] resize-none"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>{mode === "quick" ? "Anything to mention? (optional)" : "What do you want to convey?"}</Label>
-            <Textarea
-              value={intent}
-              onChange={(e) => setIntent(e.target.value)}
-              placeholder={mode === "quick" ? "e.g. Decline politely, suggest next month" : "e.g. Yes I'm interested, ask about timeline and budget"}
-              className="min-h-[80px] resize-none"
-            />
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{mode === "quick" ? "Message you received" : "Conversation context (optional)"}</Label>
+              <Textarea
+                value={incoming}
+                onChange={(e) => setIncoming(e.target.value)}
+                placeholder={mode === "quick" ? "Paste the LinkedIn message, email, DM…" : "Paste the thread for context…"}
+                className="min-h-[120px] resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{mode === "quick" ? "Anything to mention? (optional)" : "What do you want to convey?"}</Label>
+              <Textarea
+                value={intent}
+                onChange={(e) => setIntent(e.target.value)}
+                placeholder={mode === "quick" ? "e.g. Decline politely, suggest next month" : "e.g. Yes I'm interested, ask about timeline and budget"}
+                className="min-h-[80px] resize-none"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid sm:grid-cols-3 gap-4 mt-6">
           <div className="space-y-2">
