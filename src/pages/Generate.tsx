@@ -144,22 +144,29 @@ export default function Generate() {
     <div className="container max-w-5xl py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight">
-          {mode === "outreach" ? "Craft an outreach message" : "Generate a reply"}
+          {mode === "outreach"
+            ? "Craft an outreach message"
+            : mode === "fix"
+            ? "Fix a draft"
+            : "Generate a reply"}
         </h1>
         <p className="text-muted-foreground mt-1">
           {mode === "outreach"
             ? "Tell us who you're reaching out to and what you want — get three variants."
+            : mode === "fix"
+            ? "Paste your draft — get three improved versions in your voice."
             : "Paste a message, pick your tone, get three variants."}
         </p>
       </div>
 
       <Card className="p-6 shadow-soft">
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "quick" | "thread" | "outreach")}>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
             <TabsList>
+              <TabsTrigger value="outreach">Outreach</TabsTrigger>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
               <TabsTrigger value="thread">Thread + intent</TabsTrigger>
-              <TabsTrigger value="outreach">Outreach</TabsTrigger>
+              <TabsTrigger value="fix">Fix a draft</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex-1" />
@@ -190,6 +197,17 @@ export default function Generate() {
               />
             </div>
             <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Linkedin className="h-3.5 w-3.5" /> Their LinkedIn URL (optional)
+              </Label>
+              <Input
+                type="url"
+                value={recipientLinkedinUrl}
+                onChange={(e) => setRecipientLinkedinUrl(e.target.value)}
+                placeholder="https://www.linkedin.com/in/janedoe"
+              />
+            </div>
+            <div className="space-y-2">
               <Label>What do you want from this message?</Label>
               <Textarea
                 value={goal}
@@ -204,6 +222,27 @@ export default function Generate() {
                 value={outreachContext}
                 onChange={(e) => setOutreachContext(e.target.value)}
                 placeholder="e.g. Loved their recent talk on design systems; we just shipped a similar product"
+                className="min-h-[80px] resize-none"
+              />
+            </div>
+          </div>
+        ) : mode === "fix" ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Your draft</Label>
+              <Textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Paste the message you've written and want to improve…"
+                className="min-h-[160px] resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>What should we fix or emphasize? (optional)</Label>
+              <Textarea
+                value={intent}
+                onChange={(e) => setIntent(e.target.value)}
+                placeholder="e.g. Make it shorter and less formal, keep the ask clear"
                 className="min-h-[80px] resize-none"
               />
             </div>
