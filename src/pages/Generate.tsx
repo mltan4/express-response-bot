@@ -40,10 +40,13 @@ type VoiceProfile = { id: string; name: string; preset: string | null; samples: 
 
 export default function Generate() {
   const { user } = useAuth();
-  const [mode, setMode] = useState<"quick" | "thread">("quick");
+  const [mode, setMode] = useState<"quick" | "thread" | "outreach">("quick");
   const [platform, setPlatform] = useState("linkedin");
   const [incoming, setIncoming] = useState("");
   const [intent, setIntent] = useState("");
+  const [recipient, setRecipient] = useState("");
+  const [goal, setGoal] = useState("");
+  const [outreachContext, setOutreachContext] = useState("");
   const [tone, setTone] = useState("professional");
   const [length, setLength] = useState("medium");
   const [voiceProfileId, setVoiceProfileId] = useState<string>("none");
