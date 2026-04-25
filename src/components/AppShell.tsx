@@ -30,7 +30,21 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <aside className="fixed inset-y-0 left-0 w-60 border-r border-border bg-card/60 backdrop-blur-sm flex flex-col">
+      {/* Mobile top bar */}
+      <header className="md:hidden sticky top-0 z-20 flex items-center justify-between px-4 h-14 border-b border-border bg-card/80 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-lg bg-gradient-primary flex items-center justify-center shadow-soft">
+            <Sparkles className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="font-semibold tracking-tight">ReplyKit</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
+          <LogOut className="h-4 w-4" />
+        </Button>
+      </header>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex fixed inset-y-0 left-0 w-60 border-r border-border bg-card/60 backdrop-blur-sm flex-col">
         <div className="px-5 py-5 flex items-center gap-2 border-b border-border">
           <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-soft">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
@@ -62,9 +76,32 @@ export default function AppShell() {
           </Button>
         </div>
       </aside>
-      <main className="ml-60 min-h-screen">
+
+      <main className="md:ml-60 min-h-screen pb-20 md:pb-0">
         <Outlet />
       </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
+        <div className="grid grid-cols-3">
+          {navItems.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                cn(
+                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                )
+              }
+            >
+              <Icon className="h-5 w-5" />
+              {label}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }
