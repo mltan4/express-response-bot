@@ -46,10 +46,10 @@ export default function History() {
   };
 
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">History</h1>
-        <p className="text-muted-foreground mt-1">Your last 50 generations.</p>
+    <div className="container max-w-4xl px-4 py-6 md:py-10">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">History</h1>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Your last 50 generations.</p>
       </div>
 
       {loading ? (
@@ -61,7 +61,7 @@ export default function History() {
       ) : (
         <div className="space-y-3">
           {rows.map((r) => (
-            <Card key={r.id} className="p-5 shadow-soft">
+            <Card key={r.id} className="p-4 md:p-5 shadow-soft">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -80,7 +80,7 @@ export default function History() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="grid md:grid-cols-3 gap-2 mt-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
                 {r.variants?.map((v, i) => {
                   const key = `${r.id}-${i}`;
                   return (
