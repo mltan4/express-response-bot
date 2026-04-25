@@ -97,13 +97,13 @@ export default function Voice() {
   };
 
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container max-w-4xl px-4 py-6 md:py-10">
+      <div className="flex items-start md:items-center justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Voice profiles</h1>
-          <p className="text-muted-foreground mt-1">Train the AI to write like you do.</p>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Voice profiles</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Train the AI to write like you do.</p>
         </div>
-        {!editing && <Button onClick={startNew} className="gap-2"><Plus className="h-4 w-4" /> New profile</Button>}
+        {!editing && <Button onClick={startNew} size="sm" className="gap-2 shrink-0"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">New profile</span><span className="sm:hidden">New</span></Button>}
       </div>
 
       {editing && (
@@ -194,17 +194,17 @@ export default function Voice() {
       ) : (
         <div className="space-y-3">
           {profiles.map((p) => (
-            <Card key={p.id} className="p-4 shadow-soft flex items-center justify-between hover:shadow-elevated transition-shadow">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{p.name}</h3>
+            <Card key={p.id} className="p-4 shadow-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-elevated transition-shadow">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold truncate">{p.name}</h3>
                   {p.is_default && <span className="inline-flex items-center gap-1 text-xs text-primary"><Star className="h-3 w-3 fill-current" /> Default</span>}
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {p.preset ? PRESETS.find((x) => x.id === p.preset)?.label : "Custom"} · {p.samples.length} samples
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 <Button variant="outline" size="sm" onClick={() => setEditing(p)}>Edit</Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}>
                   <Trash2 className="h-4 w-4" />
