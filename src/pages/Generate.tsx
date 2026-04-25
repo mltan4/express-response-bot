@@ -143,9 +143,9 @@ export default function Generate() {
   };
 
   return (
-    <div className="container max-w-5xl py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">
+    <div className="container max-w-5xl px-4 py-6 md:py-10">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
           {mode === "outreach" ? "Craft an outreach message" : "Generate a reply"}
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -157,20 +157,20 @@ export default function Generate() {
         </p>
       </div>
 
-      <Card className="p-6 shadow-soft">
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
-            <TabsList>
+      <Card className="p-4 md:p-6 shadow-soft">
+        <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-3 md:gap-4 mb-6">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)} className="w-full md:w-auto">
+            <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
               <TabsTrigger value="outreach">Outreach</TabsTrigger>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
-              <TabsTrigger value="thread">Thread + intent</TabsTrigger>
+              <TabsTrigger value="thread" className="whitespace-nowrap">Thread</TabsTrigger>
             </TabsList>
           </Tabs>
-          <div className="flex-1" />
+          <div className="hidden md:block flex-1" />
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground">Platform</Label>
             <Select value={platform} onValueChange={setPlatform}>
-              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="flex-1 md:w-[150px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {PLATFORMS.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
@@ -325,8 +325,8 @@ export default function Generate() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button onClick={handleGenerate} disabled={loading} size="lg" className="gap-2">
+        <div className="mt-6 flex justify-stretch md:justify-end">
+          <Button onClick={handleGenerate} disabled={loading} size="lg" className="gap-2 w-full md:w-auto">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {loading ? "Generating…" : hasDraft ? "Rewrite 3 versions" : mode === "outreach" ? "Generate 3 messages" : "Generate 3 replies"}
           </Button>
@@ -334,7 +334,7 @@ export default function Generate() {
       </Card>
 
       {variants.length > 0 && (
-        <div className="mt-8 grid lg:grid-cols-3 gap-4">
+        <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
           {variants.map((v, i) => (
             <Card key={i} className="p-5 shadow-soft hover:shadow-elevated transition-shadow flex flex-col">
               <div className="flex items-center justify-between mb-3">
