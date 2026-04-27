@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash } from "lucide-react";
+import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash, ThumbsUp, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +58,10 @@ export default function Generate() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const [chosenIdx, setChosenIdx] = useState<number | null>(null);
+  const [savingChoice, setSavingChoice] = useState<number | null>(null);
+  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -68,6 +72,25 @@ export default function Generate() {
       if (def) setVoiceProfileId(def.id);
     });
   }, [user]);
+
+  // Learn the user's preferred styles from past picks
+  const refreshStylePreferences = async () => {
+    const { data } = await supabase
+      .from("reply_history")
+      .select("variants, chosen_variant_index")
+      .not("chosen_variant_index", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach((row: any) => {
+      const idx = row.chosen_variant_index;
+      const label = row.variants?.[idx]?.label;
+      if (label) counts[label] = (counts[label] || 0) + 1;
+    });
+    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([l]) => l);
+    setStylePreferences(ranked);
+  };
+  useEffect(() => { if (user) refreshStylePreferences(); }, [user]);
 
   const handleGenerate = async () => {
     if (hasDraft && !draft.trim()) {
@@ -91,6 +114,8 @@ export default function Generate() {
 
     setLoading(true);
     setVariants([]);
+    setHistoryId(null);
+    setChosenIdx(null);
     try {
       const voiceProfile = voiceProfiles.find((v) => v.id === voiceProfileId) ?? null;
       const { data, error } = await supabase.functions.invoke("generate-reply", {
@@ -106,6 +131,7 @@ export default function Generate() {
           draft,
           tone, length,
           voiceProfile,
+          stylePreferences,
         },
       });
       if (error) throw error;
@@ -119,7 +145,7 @@ export default function Generate() {
           ? `${hasDraft ? "[fix draft] " : ""}To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal || "—"}`
           : `${hasDraft ? "[fix draft] " : ""}${intent || ""}` || null;
 
-      await supabase.from("reply_history").insert({
+      const { data: inserted } = await supabase.from("reply_history").insert({
         user_id: user!.id,
         platform, mode: hasDraft ? `${mode}+fix` : mode,
         incoming_message: historyIncoming,
@@ -127,12 +153,30 @@ export default function Generate() {
         tone, length,
         voice_profile_id: voiceProfile?.id ?? null,
         variants: data.variants,
-      });
+      }).select("id").single();
+      if (inserted?.id) setHistoryId(inserted.id);
     } catch (e: any) {
       toast.error(e.message || "Failed to generate replies");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePick = async (idx: number) => {
+    if (!historyId) return;
+    setSavingChoice(idx);
+    const { error } = await supabase
+      .from("reply_history")
+      .update({ chosen_variant_index: idx })
+      .eq("id", historyId);
+    setSavingChoice(null);
+    if (error) {
+      toast.error("Couldn't save your pick");
+      return;
+    }
+    setChosenIdx(idx);
+    toast.success("Got it — learning from this pick");
+    refreshStylePreferences();
   };
 
   const handleCopy = (text: string, idx: number) => {
