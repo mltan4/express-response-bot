@@ -199,6 +199,12 @@ export default function Generate() {
             ? "Tell us who you're reaching out to and what you want — get three variants."
             : "Paste a message, pick your tone, get three variants."}
         </p>
+        {stylePreferences.length > 0 && (
+          <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+            <TrendingUp className="h-3 w-3" />
+            Learning your style: prefers {stylePreferences.slice(0, 3).join(", ")}
+          </div>
+        )}
       </div>
 
       <Card className="p-4 md:p-6 shadow-soft">
@@ -380,21 +386,45 @@ export default function Generate() {
       {variants.length > 0 && (
         <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
           {variants.map((v, i) => (
-            <Card key={i} className="p-5 shadow-soft hover:shadow-elevated transition-shadow flex flex-col">
+            <Card
+              key={i}
+              className={cn(
+                "p-5 shadow-soft hover:shadow-elevated transition-all flex flex-col",
+                chosenIdx === i && "ring-2 ring-primary shadow-elevated",
+              )}
+            >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{v.label}</span>
                 <span className="text-xs text-muted-foreground">Option {i + 1}</span>
               </div>
               <p className="text-sm leading-relaxed flex-1 whitespace-pre-wrap">{v.text}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4 gap-2"
-                onClick={() => handleCopy(v.text, i)}
-              >
-                {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                {copiedIdx === i ? "Copied" : "Copy"}
-              </Button>
+              <div className="mt-4 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-2"
+                  onClick={() => handleCopy(v.text, i)}
+                >
+                  {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedIdx === i ? "Copied" : "Copy"}
+                </Button>
+                <Button
+                  variant={chosenIdx === i ? "default" : "secondary"}
+                  size="sm"
+                  className="flex-1 gap-2"
+                  onClick={() => handlePick(i)}
+                  disabled={savingChoice !== null || !historyId}
+                >
+                  {savingChoice === i ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : chosenIdx === i ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <ThumbsUp className="h-3.5 w-3.5" />
+                  )}
+                  {chosenIdx === i ? "Picked" : "Use this"}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
