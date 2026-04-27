@@ -43,7 +43,7 @@ export default function Generate() {
   const { user } = useAuth();
   const [mode, setMode] = useState<"quick" | "thread" | "outreach">("outreach");
   const [hasDraft, setHasDraft] = useState(false);
-  const [platform, setPlatform] = useState("linkedin");
+  const [platform, setPlatform] = useState("slack");
   const [incoming, setIncoming] = useState("");
   const [intent, setIntent] = useState("");
   const [recipient, setRecipient] = useState("");
