@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, platform, hasDraft, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft } = await req.json();
+    const { mode, platform, hasDraft, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft, stylePreferences } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -53,11 +53,15 @@ Deno.serve(async (req) => {
       ? `${isOutreach ? "cold outreach " : ""}message editing`
       : isOutreach ? "cold outreach" : "reply";
 
+    const styleBias = Array.isArray(stylePreferences) && stylePreferences.length
+      ? `\n\nLearned style preference: in past sessions, this user has most often picked variants labeled: ${stylePreferences.slice(0, 3).map((s: string) => `"${s}"`).join(", ")}. Bias AT LEAST ONE of the 3 variants toward these styles, but still keep the 3 meaningfully distinct.`
+      : "";
+
     const systemPrompt = `You are a ${assistantRole} assistant. Generate exactly 3 distinct ${hasDraft ? `improved ${kindNoun}` : kindNoun} variants for the user.
 
 Platform context: ${platformGuide}
 Tone: ${toneGuide}
-Length: each variant should be ${lengthGuide}.${voiceContext}
+Length: each variant should be ${lengthGuide}.${voiceContext}${styleBias}
 
 Rules:
 - Output ONLY through the provided tool, never plain text.
