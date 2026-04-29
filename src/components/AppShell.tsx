@@ -69,8 +69,11 @@ export default function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-border">
-          <div className="px-3 py-2 text-xs text-muted-foreground truncate">{user.email}</div>
+        <div className="p-3 border-t border-border space-y-1">
+          <Button variant="outline" size="sm" asChild className="w-full justify-start gap-2">
+            <Link to="/install"><Chrome className="h-4 w-4" /> Chrome extension</Link>
+          </Button>
+          <div className="px-3 pt-2 text-xs text-muted-foreground truncate">{user.email}</div>
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full justify-start gap-2">
             <LogOut className="h-4 w-4" /> Sign out
           </Button>
