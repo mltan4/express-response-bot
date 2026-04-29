@@ -1,7 +1,7 @@
-import { Outlet, NavLink, useNavigate, Navigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MessageSquareReply, Mic2, History, LogOut } from "lucide-react";
+import { Sparkles, MessageSquareReply, Mic2, History, LogOut, Chrome } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
