@@ -10,6 +10,7 @@ import AppShell from "./components/AppShell.tsx";
 import Generate from "./pages/Generate.tsx";
 import Voice from "./pages/Voice.tsx";
 import History from "./pages/History.tsx";
+import Install from "./pages/Install.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/install" element={<Install />} />
             <Route path="/app" element={<AppShell />}>
               <Route index element={<Generate />} />
               <Route path="voice" element={<Voice />} />
