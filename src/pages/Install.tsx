@@ -79,6 +79,7 @@ export default function Install() {
       return;
     }
     let success = false;
+    let lastError = "";
     for (const id of ids) {
       try {
         await new Promise<void>((resolve, reject) => {
@@ -86,7 +87,8 @@ export default function Install() {
             id,
             { type: "RK_SET_TOKEN", token, email: user.email },
             (resp: any) => {
-              if (w.chrome.runtime.lastError) reject(w.chrome.runtime.lastError);
+              const err = w.chrome.runtime.lastError;
+              if (err) reject(new Error(err.message || "chrome.runtime error"));
               else if (resp?.ok) resolve();
               else reject(new Error("Extension didn't acknowledge"));
             },
@@ -94,8 +96,9 @@ export default function Install() {
         });
         success = true;
         break;
-      } catch {
-        // try next id
+      } catch (e: any) {
+        lastError = e?.message || String(e);
+        console.error("[ReplyKit sync] id", id, "->", lastError);
       }
     }
     if (success) {
@@ -103,6 +106,7 @@ export default function Install() {
       toast.success("Extension is signed in. You're ready to use it on LinkedIn.");
     } else {
       setSyncState("not-installed");
+      if (lastError) toast.error(`Sync failed: ${lastError}`);
     }
   };
 
@@ -200,7 +204,14 @@ export default function Install() {
               {syncState === "not-installed" && (
                 <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  Couldn't reach the extension. Make sure you finished step 2 and pasted the correct ID.
+                  <span>
+                    Couldn't reach the extension. Common causes:
+                    <ul className="list-disc list-inside mt-1 space-y-0.5">
+                      <li>Extension ID is wrong (copy it exactly from <code className="bg-muted px-1 rounded">chrome://extensions</code>)</li>
+                      <li>You downloaded the ZIP <strong>before</strong> this fix — re-download and reload the unpacked folder</li>
+                      <li>The extension is disabled in Chrome</li>
+                    </ul>
+                  </span>
                 </div>
               )}
             </div>

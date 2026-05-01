@@ -34,6 +34,9 @@
     "matches": [
       "https://*.lovable.app/*",
       "https://*.lovableproject.com/*",
+      "https://replykit.nextcraft.life/*",
+      "https://*.nextcraft.life/*",
+      "http://localhost/*",
       "http://localhost:*/*"
     ]
   },
