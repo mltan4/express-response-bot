@@ -472,6 +472,50 @@ export default function Generate() {
           ))}
         </div>
       )}
+
+      {variants.length > 0 && (
+        <Card id="final-version-card" className="mt-6 p-5 md:p-6 shadow-soft">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight">Your final version</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                None of the options quite right? Write or tweak your own here. We'll save it so the AI keeps learning your real voice.
+              </p>
+            </div>
+            {finalSaved && (
+              <span className="inline-flex items-center gap-1 text-xs text-primary font-medium shrink-0">
+                <Check className="h-3.5 w-3.5" /> Saved
+              </span>
+            )}
+          </div>
+          <Textarea
+            value={finalText}
+            onChange={(e) => { setFinalText(e.target.value); setFinalSaved(false); }}
+            placeholder="Write your final version here, or click 'Edit this in final version' on any option above to start from it…"
+            className="min-h-[140px] resize-none mt-2"
+          />
+          <div className="mt-3 flex flex-col sm:flex-row sm:justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyFinal}
+              disabled={!finalText.trim()}
+              className="gap-2"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveFinal}
+              disabled={savingFinal || !finalText.trim() || !historyId}
+              className="gap-2"
+            >
+              {savingFinal ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              Save final version
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
