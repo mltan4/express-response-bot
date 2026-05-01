@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const TONES = [
+  { id: "conversational", label: "Conversational" },
   { id: "professional", label: "Professional" },
   { id: "casual", label: "Casual" },
   { id: "witty", label: "Witty" },
