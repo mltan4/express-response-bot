@@ -101,7 +101,7 @@ ${hasDraft
     }
 
     const userPrompt = hasDraft
-      ? `${contextBlock}\n\n---\n\nMy draft — rewrite this into 3 improved variants:\n"""${draft}"""`
+      ? `${contextBlock}\n\n---\n\nMy draft — lightly clean this up (fix typos, grammar, flow only). Stay as close to my original wording as possible:\n"""${draft}"""`
       : contextBlock;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
