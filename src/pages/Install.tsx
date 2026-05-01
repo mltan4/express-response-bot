@@ -129,7 +129,7 @@ export default function Install() {
       <main className="container max-w-2xl px-4 py-8 md:py-12">
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium mb-4">
-            <Chrome className="h-3 w-3" /> Chrome extension
+            <Chrome className="h-3 w-3" /> Browser extension · Chrome, Edge, Brave, Arc
           </div>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">ReplyKit on LinkedIn, in one click</h1>
           <p className="text-muted-foreground mt-2">
