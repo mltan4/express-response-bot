@@ -157,11 +157,18 @@ export default function Install() {
           <div className="flex items-start gap-3">
             <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold shrink-0">2</div>
             <div className="flex-1">
-              <h3 className="font-semibold">Load it in Chrome</h3>
+              <h3 className="font-semibold">Load it in your browser</h3>
+              <p className="text-xs text-muted-foreground mt-1">Works in Chrome, Microsoft Edge, Brave, Arc, and Opera.</p>
               <ol className="text-sm text-muted-foreground mt-2 space-y-1 list-decimal list-inside">
                 <li>Unzip the file you just downloaded.</li>
-                <li>Open <code className="bg-muted px-1.5 py-0.5 rounded text-xs">chrome://extensions</code> in a new tab.</li>
-                <li>Toggle <strong>Developer mode</strong> on (top-right).</li>
+                <li>
+                  Open the extensions page in a new tab:
+                  <ul className="list-disc list-inside ml-4 mt-1">
+                    <li>Chrome / Brave / Arc / Opera: <code className="bg-muted px-1.5 py-0.5 rounded text-xs">chrome://extensions</code></li>
+                    <li>Microsoft Edge: <code className="bg-muted px-1.5 py-0.5 rounded text-xs">edge://extensions</code></li>
+                  </ul>
+                </li>
+                <li>Toggle <strong>Developer mode</strong> on (top-right in Chrome; left sidebar in Edge).</li>
                 <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
                 <li>Copy the <strong>Extension ID</strong> shown on the card and paste it below.</li>
               </ol>
