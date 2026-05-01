@@ -5,6 +5,7 @@ const corsHeaders = {
 };
 
 const PRESETS: Record<string, string> = {
+  conversational: "Conversational — natural, easygoing, like a real person talking. Contractions, light filler words ('honestly', 'tbh', 'fwiw') OK. Avoid corporate-speak and over-formality.",
   professional: "Professional, clear, and respectful. Avoid slang. Use complete sentences.",
   casual: "Casual and friendly, like talking to a colleague. Contractions are fine.",
   witty: "Witty and a touch playful, but never sarcastic or unkind. Light humor where it fits.",
