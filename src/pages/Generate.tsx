@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const TONES = [
+  { id: "conversational", label: "Conversational" },
   { id: "professional", label: "Professional" },
   { id: "casual", label: "Casual" },
   { id: "witty", label: "Witty" },
@@ -51,7 +52,7 @@ export default function Generate() {
   const [goal, setGoal] = useState("");
   const [outreachContext, setOutreachContext] = useState("");
   const [draft, setDraft] = useState("");
-  const [tone, setTone] = useState("casual");
+  const [tone, setTone] = useState("conversational");
   const [length, setLength] = useState("medium");
   const [voiceProfileId, setVoiceProfileId] = useState<string>("none");
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
@@ -62,6 +63,9 @@ export default function Generate() {
   const [chosenIdx, setChosenIdx] = useState<number | null>(null);
   const [savingChoice, setSavingChoice] = useState<number | null>(null);
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
+  const [finalText, setFinalText] = useState("");
+  const [savingFinal, setSavingFinal] = useState(false);
+  const [finalSaved, setFinalSaved] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -116,6 +120,8 @@ export default function Generate() {
     setVariants([]);
     setHistoryId(null);
     setChosenIdx(null);
+    setFinalText("");
+    setFinalSaved(false);
     try {
       const voiceProfile = voiceProfiles.find((v) => v.id === voiceProfileId) ?? null;
       const { data, error } = await supabase.functions.invoke("generate-reply", {
@@ -184,6 +190,29 @@ export default function Generate() {
     setCopiedIdx(idx);
     toast.success("Copied to clipboard");
     setTimeout(() => setCopiedIdx(null), 1600);
+  };
+
+  const handleSaveFinal = async () => {
+    if (!historyId || !finalText.trim()) return;
+    setSavingFinal(true);
+    const { error } = await supabase
+      .from("reply_history")
+      .update({ final_text: finalText.trim() })
+      .eq("id", historyId);
+    setSavingFinal(false);
+    if (error) {
+      toast.error("Couldn't save your final version");
+      return;
+    }
+    setFinalSaved(true);
+    toast.success("Saved your final version");
+    setTimeout(() => setFinalSaved(false), 2000);
+  };
+
+  const handleCopyFinal = () => {
+    if (!finalText.trim()) return;
+    navigator.clipboard.writeText(finalText);
+    toast.success("Copied your final version");
   };
 
   return (
@@ -398,36 +427,94 @@ export default function Generate() {
                 <span className="text-xs text-muted-foreground">Option {i + 1}</span>
               </div>
               <p className="text-sm leading-relaxed flex-1 whitespace-pre-wrap">{v.text}</p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => handleCopy(v.text, i)}
+                  >
+                    {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedIdx === i ? "Copied" : "Copy"}
+                  </Button>
+                  <Button
+                    variant={chosenIdx === i ? "default" : "secondary"}
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => handlePick(i)}
+                    disabled={savingChoice !== null || !historyId}
+                  >
+                    {savingChoice === i ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : chosenIdx === i ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    )}
+                    {chosenIdx === i ? "Picked" : "Use this"}
+                  </Button>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="flex-1 gap-2"
-                  onClick={() => handleCopy(v.text, i)}
+                  className="text-xs h-7"
+                  onClick={() => {
+                    setFinalText(v.text);
+                    setFinalSaved(false);
+                    document.getElementById("final-version-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
                 >
-                  {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copiedIdx === i ? "Copied" : "Copy"}
-                </Button>
-                <Button
-                  variant={chosenIdx === i ? "default" : "secondary"}
-                  size="sm"
-                  className="flex-1 gap-2"
-                  onClick={() => handlePick(i)}
-                  disabled={savingChoice !== null || !historyId}
-                >
-                  {savingChoice === i ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : chosenIdx === i ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  )}
-                  {chosenIdx === i ? "Picked" : "Use this"}
+                  Edit this in final version ↓
                 </Button>
               </div>
             </Card>
           ))}
         </div>
+      )}
+
+      {variants.length > 0 && (
+        <Card id="final-version-card" className="mt-6 p-5 md:p-6 shadow-soft">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight">Your final version</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                None of the options quite right? Write or tweak your own here. We'll save it so the AI keeps learning your real voice.
+              </p>
+            </div>
+            {finalSaved && (
+              <span className="inline-flex items-center gap-1 text-xs text-primary font-medium shrink-0">
+                <Check className="h-3.5 w-3.5" /> Saved
+              </span>
+            )}
+          </div>
+          <Textarea
+            value={finalText}
+            onChange={(e) => { setFinalText(e.target.value); setFinalSaved(false); }}
+            placeholder="Write your final version here, or click 'Edit this in final version' on any option above to start from it…"
+            className="min-h-[140px] resize-none mt-2"
+          />
+          <div className="mt-3 flex flex-col sm:flex-row sm:justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyFinal}
+              disabled={!finalText.trim()}
+              className="gap-2"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveFinal}
+              disabled={savingFinal || !finalText.trim() || !historyId}
+              className="gap-2"
+            >
+              {savingFinal ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              Save final version
+            </Button>
+          </div>
+        </Card>
       )}
     </div>
   );

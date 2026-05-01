@@ -1,0 +1,1 @@
+ALTER TABLE public.reply_history ADD COLUMN IF NOT EXISTS final_text TEXT;
