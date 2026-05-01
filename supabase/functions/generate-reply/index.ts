@@ -66,7 +66,9 @@ Length: each variant should be ${lengthGuide}.${voiceContext}${styleBias}
 
 Rules:
 - Output ONLY through the provided tool, never plain text.
-- Make the 3 variants meaningfully different (different angle, opener, or structure) — not minor wording tweaks.
+- ${hasDraft
+  ? "The 3 variants should be SUBTLE alternatives of the user's draft (e.g. one minimally edited, one slightly tightened, one with light reordering). Do NOT rewrite from scratch or change the angle/structure."
+  : "Make the 3 variants meaningfully different (different angle, opener, or structure) — not minor wording tweaks."}
 - Never use clichés like "I hope this email finds you well", "circle back", or "quick question" unless the user's voice samples use them.
 ${isOutreach
   ? `- This is a COLD message — the recipient does not know the sender. Lead with relevance or a specific hook, not generic flattery.
@@ -76,12 +78,16 @@ ${isOutreach
 - Match the language the user wrote their goal/context in.`
   : `- Match the language of the incoming message.`}
 ${hasDraft
-  ? `\nThe user has provided a DRAFT they wrote themselves. Your job is to rewrite it:
-- Preserve the user's original intent, key facts, names, numbers, and links — do not invent new information.
-- Improve clarity, flow, tone, grammar, and structure. Remove filler.
-- Keep the user's voice; do not over-polish into something they wouldn't say.
-- Use the surrounding context (recipient, goal, incoming message, etc.) only as background — the draft is the source of truth.
-- Match the language of the original draft.`
+  ? `\nThe user has provided a DRAFT they wrote themselves. Your job is LIGHT-TOUCH editing — NOT rewriting:
+- PRIMARY GOAL: fix typos, grammar mistakes, and awkward flow. That's it.
+- Preserve the user's exact wording wherever it already works. Do not swap words for "better" synonyms.
+- Keep the same sentence count, structure, and order as the draft unless something is broken.
+- Do NOT add new sentences, ideas, greetings, sign-offs, or CTAs that aren't in the draft.
+- Do NOT change the tone or "upgrade" the voice — match how the user already sounds.
+- Preserve all facts, names, numbers, links, emojis, and punctuation style (including lowercase, fragments, etc.) as written.
+- Use the surrounding context (recipient, goal, etc.) only to understand the draft — do not pull content from it into the output.
+- Match the language of the original draft.
+- If the draft is already clean, return it nearly verbatim across all 3 variants with only micro-differences.`
   : ""}`;
 
     let contextBlock: string;
