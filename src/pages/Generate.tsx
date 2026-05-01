@@ -63,6 +63,9 @@ export default function Generate() {
   const [chosenIdx, setChosenIdx] = useState<number | null>(null);
   const [savingChoice, setSavingChoice] = useState<number | null>(null);
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
+  const [finalText, setFinalText] = useState("");
+  const [savingFinal, setSavingFinal] = useState(false);
+  const [finalSaved, setFinalSaved] = useState(false);
 
   useEffect(() => {
     if (!user) return;
