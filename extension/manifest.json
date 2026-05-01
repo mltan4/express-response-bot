@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ReplyKit for LinkedIn",
   "version": "1.0.0",
-  "description": "Generate on-brand LinkedIn replies and post comments in one click — powered by ReplyKit.",
+  "description": "Generate on-brand LinkedIn replies and post comments in one click. Works in Chrome, Edge, Brave, Arc, and Opera.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "https://www.linkedin.com/*",
