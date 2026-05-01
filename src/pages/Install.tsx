@@ -79,6 +79,7 @@ export default function Install() {
       return;
     }
     let success = false;
+    let lastError = "";
     for (const id of ids) {
       try {
         await new Promise<void>((resolve, reject) => {
@@ -86,7 +87,8 @@ export default function Install() {
             id,
             { type: "RK_SET_TOKEN", token, email: user.email },
             (resp: any) => {
-              if (w.chrome.runtime.lastError) reject(w.chrome.runtime.lastError);
+              const err = w.chrome.runtime.lastError;
+              if (err) reject(new Error(err.message || "chrome.runtime error"));
               else if (resp?.ok) resolve();
               else reject(new Error("Extension didn't acknowledge"));
             },
@@ -94,8 +96,9 @@ export default function Install() {
         });
         success = true;
         break;
-      } catch {
-        // try next id
+      } catch (e: any) {
+        lastError = e?.message || String(e);
+        console.error("[ReplyKit sync] id", id, "->", lastError);
       }
     }
     if (success) {
@@ -103,6 +106,7 @@ export default function Install() {
       toast.success("Extension is signed in. You're ready to use it on LinkedIn.");
     } else {
       setSyncState("not-installed");
+      if (lastError) toast.error(`Sync failed: ${lastError}`);
     }
   };
 
