@@ -427,31 +427,45 @@ export default function Generate() {
                 <span className="text-xs text-muted-foreground">Option {i + 1}</span>
               </div>
               <p className="text-sm leading-relaxed flex-1 whitespace-pre-wrap">{v.text}</p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => handleCopy(v.text, i)}
+                  >
+                    {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedIdx === i ? "Copied" : "Copy"}
+                  </Button>
+                  <Button
+                    variant={chosenIdx === i ? "default" : "secondary"}
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => handlePick(i)}
+                    disabled={savingChoice !== null || !historyId}
+                  >
+                    {savingChoice === i ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : chosenIdx === i ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    )}
+                    {chosenIdx === i ? "Picked" : "Use this"}
+                  </Button>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="flex-1 gap-2"
-                  onClick={() => handleCopy(v.text, i)}
+                  className="text-xs h-7"
+                  onClick={() => {
+                    setFinalText(v.text);
+                    setFinalSaved(false);
+                    document.getElementById("final-version-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
                 >
-                  {copiedIdx === i ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copiedIdx === i ? "Copied" : "Copy"}
-                </Button>
-                <Button
-                  variant={chosenIdx === i ? "default" : "secondary"}
-                  size="sm"
-                  className="flex-1 gap-2"
-                  onClick={() => handlePick(i)}
-                  disabled={savingChoice !== null || !historyId}
-                >
-                  {savingChoice === i ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : chosenIdx === i ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                  )}
-                  {chosenIdx === i ? "Picked" : "Use this"}
+                  Edit this in final version ↓
                 </Button>
               </div>
             </Card>
