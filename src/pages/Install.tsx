@@ -204,7 +204,14 @@ export default function Install() {
               {syncState === "not-installed" && (
                 <div className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  Couldn't reach the extension. Make sure you finished step 2 and pasted the correct ID.
+                  <span>
+                    Couldn't reach the extension. Common causes:
+                    <ul className="list-disc list-inside mt-1 space-y-0.5">
+                      <li>Extension ID is wrong (copy it exactly from <code className="bg-muted px-1 rounded">chrome://extensions</code>)</li>
+                      <li>You downloaded the ZIP <strong>before</strong> this fix — re-download and reload the unpacked folder</li>
+                      <li>The extension is disabled in Chrome</li>
+                    </ul>
+                  </span>
                 </div>
               )}
             </div>
