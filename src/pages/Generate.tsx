@@ -52,7 +52,7 @@ export default function Generate() {
   const [goal, setGoal] = useState("");
   const [outreachContext, setOutreachContext] = useState("");
   const [draft, setDraft] = useState("");
-  const [tone, setTone] = useState("casual");
+  const [tone, setTone] = useState("conversational");
   const [length, setLength] = useState("medium");
   const [voiceProfileId, setVoiceProfileId] = useState<string>("none");
   const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfile[]>([]);
