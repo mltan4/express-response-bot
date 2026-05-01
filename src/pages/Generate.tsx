@@ -120,6 +120,8 @@ export default function Generate() {
     setVariants([]);
     setHistoryId(null);
     setChosenIdx(null);
+    setFinalText("");
+    setFinalSaved(false);
     try {
       const voiceProfile = voiceProfiles.find((v) => v.id === voiceProfileId) ?? null;
       const { data, error } = await supabase.functions.invoke("generate-reply", {
