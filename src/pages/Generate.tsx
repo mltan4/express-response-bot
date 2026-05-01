@@ -192,6 +192,29 @@ export default function Generate() {
     setTimeout(() => setCopiedIdx(null), 1600);
   };
 
+  const handleSaveFinal = async () => {
+    if (!historyId || !finalText.trim()) return;
+    setSavingFinal(true);
+    const { error } = await supabase
+      .from("reply_history")
+      .update({ final_text: finalText.trim() })
+      .eq("id", historyId);
+    setSavingFinal(false);
+    if (error) {
+      toast.error("Couldn't save your final version");
+      return;
+    }
+    setFinalSaved(true);
+    toast.success("Saved your final version");
+    setTimeout(() => setFinalSaved(false), 2000);
+  };
+
+  const handleCopyFinal = () => {
+    if (!finalText.trim()) return;
+    navigator.clipboard.writeText(finalText);
+    toast.success("Copied your final version");
+  };
+
   return (
     <div className="container max-w-5xl px-4 py-6 md:py-10">
       <div className="mb-6 md:mb-8">
