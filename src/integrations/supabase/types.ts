@@ -42,6 +42,7 @@ export type Database = {
         Row: {
           chosen_variant_index: number | null
           created_at: string
+          final_text: string | null
           id: string
           incoming_message: string | null
           intent: string | null
@@ -56,6 +57,7 @@ export type Database = {
         Insert: {
           chosen_variant_index?: number | null
           created_at?: string
+          final_text?: string | null
           id?: string
           incoming_message?: string | null
           intent?: string | null
@@ -70,6 +72,7 @@ export type Database = {
         Update: {
           chosen_variant_index?: number | null
           created_at?: string
+          final_text?: string | null
           id?: string
           incoming_message?: string | null
           intent?: string | null
