@@ -42,7 +42,7 @@ type VoiceProfile = { id: string; name: string; preset: string | null; samples: 
 
 export default function Generate() {
   const { user } = useAuth();
-  const [mode, setMode] = useState<"quick" | "thread" | "outreach">("outreach");
+  const [mode, setMode] = useState<"quick" | "outreach">("outreach");
   const [hasDraft, setHasDraft] = useState(false);
   const [platform, setPlatform] = useState("slack");
   const [incoming, setIncoming] = useState("");
@@ -104,10 +104,6 @@ export default function Generate() {
     if (!hasDraft) {
       if (mode === "quick" && !incoming.trim()) {
         toast.error("Paste the message you want to reply to.");
-        return;
-      }
-      if (mode === "thread" && !intent.trim()) {
-        toast.error("Describe what you want to convey.");
         return;
       }
       if (mode === "outreach" && !goal.trim()) {
@@ -239,10 +235,9 @@ export default function Generate() {
       <Card className="p-4 md:p-6 shadow-soft">
         <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-3 md:gap-4 mb-6">
           <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)} className="w-full md:w-auto">
-            <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-flex">
+            <TabsList className="w-full md:w-auto grid grid-cols-2 md:inline-flex">
               <TabsTrigger value="outreach">Outreach</TabsTrigger>
               <TabsTrigger value="quick">Quick reply</TabsTrigger>
-              <TabsTrigger value="thread" className="whitespace-nowrap">Thread</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="hidden md:block flex-1" />
@@ -273,18 +268,7 @@ export default function Generate() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Linkedin className="h-3.5 w-3.5" /> Their LinkedIn URL (optional)
-              </Label>
-              <Input
-                type="url"
-                value={recipientLinkedinUrl}
-                onChange={(e) => setRecipientLinkedinUrl(e.target.value)}
-                placeholder="https://www.linkedin.com/in/janedoe"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>What do you want from this message?</Label>
+              <Label>Give some context</Label>
               <Textarea
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
@@ -292,33 +276,24 @@ export default function Generate() {
                 className="min-h-[80px] resize-none"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Background or hook (optional)</Label>
-              <Textarea
-                value={outreachContext}
-                onChange={(e) => setOutreachContext(e.target.value)}
-                placeholder="e.g. Loved their recent talk on design systems; we just shipped a similar product"
-                className="min-h-[80px] resize-none"
-              />
-            </div>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>{mode === "quick" ? "Message you received" : "Conversation context (optional)"}</Label>
+              <Label>Message you received</Label>
               <Textarea
                 value={incoming}
                 onChange={(e) => setIncoming(e.target.value)}
-                placeholder={mode === "quick" ? "Paste the LinkedIn message, email, DM…" : "Paste the thread for context…"}
+                placeholder="Paste the LinkedIn message, email, DM…"
                 className="min-h-[120px] resize-none"
               />
             </div>
             <div className="space-y-2">
-              <Label>{mode === "quick" ? "Anything to mention? (optional)" : "What do you want to convey?"}</Label>
+              <Label>Anything to mention? (optional)</Label>
               <Textarea
                 value={intent}
                 onChange={(e) => setIntent(e.target.value)}
-                placeholder={mode === "quick" ? "e.g. Decline politely, suggest next month" : "e.g. Yes I'm interested, ask about timeline and budget"}
+                placeholder="e.g. Decline politely, suggest next month"
                 className="min-h-[80px] resize-none"
               />
             </div>
