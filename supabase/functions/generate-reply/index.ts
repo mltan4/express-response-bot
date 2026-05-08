@@ -27,13 +27,34 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, platform, hasDraft, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft, stylePreferences } = await req.json();
+    const { mode, platform, hasDraft, incomingMessage, intent, tone, length, voiceProfile, recipient, recipientLinkedinUrl, goal, context: outreachContext, draft, stylePreferences, voiceSettings } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const lengthGuide = length === "short" ? "1-2 sentences" : length === "medium" ? "3-5 sentences" : "a full paragraph (5-8 sentences)";
     const toneGuide = PRESETS[tone] || PRESETS.professional;
     const platformGuide = PLATFORM_HINTS[platform] || PLATFORM_HINTS.other;
+
+    // Translate the user's persistent voice profile into prose hints
+    let profileHints = "";
+    if (voiceSettings) {
+      const v = voiceSettings;
+      const axis = (val: number, lo: string, hi: string) => {
+        if (val <= 1) return `strongly ${lo}`;
+        if (val === 2) return `leaning ${lo}`;
+        if (val === 3) return `balanced ${lo}/${hi}`;
+        if (val === 4) return `leaning ${hi}`;
+        return `strongly ${hi}`;
+      };
+      profileHints = `\n\nUser's persistent voice profile (apply to every variant):
+- Tone: ${axis(v.voice_warm_cool, "warm", "cool")}, ${axis(v.voice_formal_casual, "formal", "casual")}, ${axis(v.voice_soft_direct, "soft", "direct")}, ${axis(v.voice_energetic_calm, "energetic", "calm")}
+- Voice: ${axis(v.voice_neutral_opinionated, "neutral", "opinionated")}, ${axis(v.voice_brief_detailed, "brief", "detailed")}, ${axis(v.voice_guarded_vulnerable, "guarded", "vulnerable")}, ${axis(v.voice_plain_technical, "plain language", "technical")}
+- Humor: ${v.voice_humor}
+- Emoji usage: ${v.voice_emoji}
+- Punctuation: ${v.voice_punctuation === "lowercase" ? "all lowercase, minimal punctuation" : v.voice_punctuation === "expressive" ? "expressive punctuation, exclamations OK" : "standard sentence case"}
+- Structure: ${v.voice_structure}`;
+    }
+
 
     let voiceContext = "";
     if (voiceProfile) {
@@ -62,7 +83,7 @@ Deno.serve(async (req) => {
 
 Platform context: ${platformGuide}
 Tone: ${toneGuide}
-Length: each variant should be ${lengthGuide}.${voiceContext}${styleBias}
+Length: each variant should be ${lengthGuide}.${profileHints}${voiceContext}${styleBias}
 
 Rules:
 - Output ONLY through the provided tool, never plain text.
