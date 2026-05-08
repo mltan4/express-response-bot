@@ -188,6 +188,17 @@ export default function Generate() {
     setChosenIdx(idx);
     toast.success("Got it — learning from this pick");
     refreshStylePreferences();
+    const chosen = variants[idx];
+    const others = variants.filter((_, i) => i !== idx);
+    if (chosen) {
+      supabase.functions.invoke("learn-voice", {
+        body: { chosenText: chosen.text, otherTexts: others.map((o) => o.text) },
+      }).then(({ data }) => {
+        if (data?.updated) {
+          setVoiceSettings((prev: any) => ({ ...(prev ?? {}), ...data.updated }));
+        }
+      });
+    }
   };
 
   const handleCopy = (text: string, idx: number) => {
