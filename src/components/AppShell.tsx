@@ -1,12 +1,13 @@
 import { Outlet, NavLink, useNavigate, Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MessageSquareReply, Mic2, History, LogOut, Chrome } from "lucide-react";
+import { Sparkles, MessageSquareReply, Mic2, History, LogOut, Chrome, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/app", label: "Generate", icon: MessageSquareReply, end: true },
   { to: "/app/voice", label: "Voice", icon: Mic2 },
+  { to: "/app/profile", label: "Profile", icon: User },
   { to: "/app/history", label: "History", icon: History },
 ];
 
@@ -86,7 +87,7 @@ export default function AppShell() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}

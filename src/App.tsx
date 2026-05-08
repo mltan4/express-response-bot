@@ -10,6 +10,7 @@ import AppShell from "./components/AppShell.tsx";
 import Generate from "./pages/Generate.tsx";
 import Voice from "./pages/Voice.tsx";
 import History from "./pages/History.tsx";
+import Profile from "./pages/Profile.tsx";
 import Install from "./pages/Install.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/app" element={<AppShell />}>
               <Route index element={<Generate />} />
               <Route path="voice" element={<Voice />} />
+              <Route path="profile" element={<Profile />} />
               <Route path="history" element={<History />} />
             </Route>
             <Route path="*" element={<NotFound />} />
