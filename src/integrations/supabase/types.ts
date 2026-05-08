@@ -21,6 +21,19 @@ export type Database = {
           display_name: string | null
           id: string
           updated_at: string
+          voice_auto_learn: boolean
+          voice_brief_detailed: number
+          voice_emoji: string
+          voice_energetic_calm: number
+          voice_formal_casual: number
+          voice_guarded_vulnerable: number
+          voice_humor: string
+          voice_neutral_opinionated: number
+          voice_plain_technical: number
+          voice_punctuation: string
+          voice_soft_direct: number
+          voice_structure: string
+          voice_warm_cool: number
         }
         Insert: {
           avatar_url?: string | null
@@ -28,6 +41,19 @@ export type Database = {
           display_name?: string | null
           id: string
           updated_at?: string
+          voice_auto_learn?: boolean
+          voice_brief_detailed?: number
+          voice_emoji?: string
+          voice_energetic_calm?: number
+          voice_formal_casual?: number
+          voice_guarded_vulnerable?: number
+          voice_humor?: string
+          voice_neutral_opinionated?: number
+          voice_plain_technical?: number
+          voice_punctuation?: string
+          voice_soft_direct?: number
+          voice_structure?: string
+          voice_warm_cool?: number
         }
         Update: {
           avatar_url?: string | null
@@ -35,6 +61,19 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string
+          voice_auto_learn?: boolean
+          voice_brief_detailed?: number
+          voice_emoji?: string
+          voice_energetic_calm?: number
+          voice_formal_casual?: number
+          voice_guarded_vulnerable?: number
+          voice_humor?: string
+          voice_neutral_opinionated?: number
+          voice_plain_technical?: number
+          voice_punctuation?: string
+          voice_soft_direct?: number
+          voice_structure?: string
+          voice_warm_cool?: number
         }
         Relationships: []
       }
