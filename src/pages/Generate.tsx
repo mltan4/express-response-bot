@@ -66,6 +66,7 @@ export default function Generate() {
   const [finalText, setFinalText] = useState("");
   const [savingFinal, setSavingFinal] = useState(false);
   const [finalSaved, setFinalSaved] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -74,6 +75,13 @@ export default function Generate() {
       setVoiceProfiles(list);
       const def = list.find((v) => v.is_default);
       if (def) setVoiceProfileId(def.id);
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if (data) setVoiceSettings(data);
     });
   }, [user]);
 
@@ -134,6 +142,7 @@ export default function Generate() {
           tone, length,
           voiceProfile,
           stylePreferences,
+          voiceSettings,
         },
       });
       if (error) throw error;
