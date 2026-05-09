@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash, ThumbsUp, TrendingUp } from "lucide-react";
+import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -59,10 +59,8 @@ export default function Generate() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [historyId, setHistoryId] = useState<string | null>(null);
   const [chosenIdx, setChosenIdx] = useState<number | null>(null);
   const [savingChoice, setSavingChoice] = useState<number | null>(null);
-  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
   const [finalText, setFinalText] = useState("");
   const [savingFinal, setSavingFinal] = useState(false);
   const [finalSaved, setFinalSaved] = useState(false);
@@ -85,24 +83,6 @@ export default function Generate() {
     });
   }, [user]);
 
-  // Learn the user's preferred styles from past picks
-  const refreshStylePreferences = async () => {
-    const { data } = await supabase
-      .from("reply_history")
-      .select("variants, chosen_variant_index")
-      .not("chosen_variant_index", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    const counts: Record<string, number> = {};
-    (data ?? []).forEach((row: any) => {
-      const idx = row.chosen_variant_index;
-      const label = row.variants?.[idx]?.label;
-      if (label) counts[label] = (counts[label] || 0) + 1;
-    });
-    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([l]) => l);
-    setStylePreferences(ranked);
-  };
-  useEffect(() => { if (user) refreshStylePreferences(); }, [user]);
 
   const handleGenerate = async () => {
     if (hasDraft && !draft.trim()) {
@@ -122,7 +102,6 @@ export default function Generate() {
 
     setLoading(true);
     setVariants([]);
-    setHistoryId(null);
     setChosenIdx(null);
     setFinalText("");
     setFinalSaved(false);
@@ -141,31 +120,12 @@ export default function Generate() {
           draft,
           tone, length,
           voiceProfile,
-          stylePreferences,
           voiceSettings,
         },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setVariants(data.variants);
-
-      const historyIncoming =
-        mode === "outreach" ? (outreachContext || null) : (incoming || null);
-      const historyIntent =
-        mode === "outreach"
-          ? `${hasDraft ? "[fix draft] " : ""}To: ${recipient || "—"}${recipientLinkedinUrl ? ` (${recipientLinkedinUrl})` : ""} · Goal: ${goal || "—"}`
-          : `${hasDraft ? "[fix draft] " : ""}${intent || ""}` || null;
-
-      const { data: inserted } = await supabase.from("reply_history").insert({
-        user_id: user!.id,
-        platform, mode: hasDraft ? `${mode}+fix` : mode,
-        incoming_message: historyIncoming,
-        intent: historyIntent,
-        tone, length,
-        voice_profile_id: voiceProfile?.id ?? null,
-        variants: data.variants,
-      }).select("id").single();
-      if (inserted?.id) setHistoryId(inserted.id);
     } catch (e: any) {
       toast.error(e.message || "Failed to generate replies");
     } finally {
@@ -174,21 +134,34 @@ export default function Generate() {
   };
 
   const handlePick = async (idx: number) => {
-    if (!historyId) return;
     setSavingChoice(idx);
-    const { error } = await supabase
-      .from("reply_history")
-      .update({ chosen_variant_index: idx })
-      .eq("id", historyId);
+    const chosen = variants[idx];
+    const historyIncoming =
+      mode === "outreach" ? (outreachContext || null) : (incoming || null);
+    const historyIntent =
+      mode === "outreach"
+        ? `${hasDraft ? "[fix draft] " : ""}To: ${recipient || "—"} · Goal: ${goal || "—"}`
+        : `${hasDraft ? "[fix draft] " : ""}${intent || ""}` || null;
+
+    const { error } = await supabase.from("reply_history").insert({
+      user_id: user!.id,
+      platform,
+      mode: hasDraft ? `${mode}+fix` : mode,
+      incoming_message: historyIncoming,
+      intent: historyIntent,
+      tone,
+      length,
+      voice_profile_id: voiceProfiles.find((v) => v.id === voiceProfileId)?.id ?? null,
+      final_text: chosen.text,
+      variants: [],
+    });
     setSavingChoice(null);
     if (error) {
       toast.error("Couldn't save your pick");
       return;
     }
     setChosenIdx(idx);
-    toast.success("Got it — learning from this pick");
-    refreshStylePreferences();
-    const chosen = variants[idx];
+    toast.success("Saved to history");
     const others = variants.filter((_, i) => i !== idx);
     if (chosen) {
       supabase.functions.invoke("learn-voice", {
@@ -209,12 +182,27 @@ export default function Generate() {
   };
 
   const handleSaveFinal = async () => {
-    if (!historyId || !finalText.trim()) return;
+    if (!finalText.trim()) return;
     setSavingFinal(true);
-    const { error } = await supabase
-      .from("reply_history")
-      .update({ final_text: finalText.trim() })
-      .eq("id", historyId);
+    const historyIncoming =
+      mode === "outreach" ? (outreachContext || null) : (incoming || null);
+    const historyIntent =
+      mode === "outreach"
+        ? `${hasDraft ? "[fix draft] " : ""}To: ${recipient || "—"} · Goal: ${goal || "—"}`
+        : `${hasDraft ? "[fix draft] " : ""}${intent || ""}` || null;
+
+    const { error } = await supabase.from("reply_history").insert({
+      user_id: user!.id,
+      platform,
+      mode: hasDraft ? `${mode}+fix` : mode,
+      incoming_message: historyIncoming,
+      intent: historyIntent,
+      tone,
+      length,
+      voice_profile_id: voiceProfiles.find((v) => v.id === voiceProfileId)?.id ?? null,
+      final_text: finalText.trim(),
+      variants: [],
+    });
     setSavingFinal(false);
     if (error) {
       toast.error("Couldn't save your final version");
@@ -244,12 +232,6 @@ export default function Generate() {
             ? "Tell us who you're reaching out to and what you want — get three variants."
             : "Paste a message, pick your tone, get three variants."}
         </p>
-        {stylePreferences.length > 0 && (
-          <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-            <TrendingUp className="h-3 w-3" />
-            Learning your style: prefers {stylePreferences.slice(0, 3).join(", ")}
-          </div>
-        )}
       </div>
 
       <Card className="p-4 md:p-6 shadow-soft">
@@ -438,7 +420,7 @@ export default function Generate() {
                     size="sm"
                     className="flex-1 gap-2"
                     onClick={() => handlePick(i)}
-                    disabled={savingChoice !== null || !historyId}
+                    disabled={savingChoice !== null}
                   >
                     {savingChoice === i ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -502,7 +484,7 @@ export default function Generate() {
             <Button
               size="sm"
               onClick={handleSaveFinal}
-              disabled={savingFinal || !finalText.trim() || !historyId}
+              disabled={savingFinal || !finalText.trim()}
               className="gap-2"
             >
               {savingFinal ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
