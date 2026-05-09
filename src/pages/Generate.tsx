@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash, ThumbsUp, TrendingUp } from "lucide-react";
+import { Sparkles, Copy, Check, Loader2, Linkedin, Mail, MessageSquare, Twitter, Hash, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -59,10 +59,8 @@ export default function Generate() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [historyId, setHistoryId] = useState<string | null>(null);
   const [chosenIdx, setChosenIdx] = useState<number | null>(null);
   const [savingChoice, setSavingChoice] = useState<number | null>(null);
-  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
   const [finalText, setFinalText] = useState("");
   const [savingFinal, setSavingFinal] = useState(false);
   const [finalSaved, setFinalSaved] = useState(false);
