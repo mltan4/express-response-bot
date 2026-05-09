@@ -14,7 +14,7 @@ type Row = {
   incoming_message: string | null;
   intent: string | null;
   tone: string | null;
-  variants: { label: string; text: string }[];
+  final_text: string | null;
   created_at: string;
 };
 
@@ -22,7 +22,7 @@ export default function History() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -32,11 +32,11 @@ export default function History() {
   };
   useEffect(() => { if (user) load(); }, [user]);
 
-  const copy = (text: string, key: string) => {
+  const copy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedKey(key);
+    setCopiedId(id);
     toast.success("Copied");
-    setTimeout(() => setCopiedKey(null), 1500);
+    setTimeout(() => setCopiedId(null), 1500);
   };
 
   const remove = async (id: string) => {
@@ -49,7 +49,7 @@ export default function History() {
     <div className="container max-w-4xl px-4 py-6 md:py-10">
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">History</h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">Your last 50 generations.</p>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Your last 50 saved replies.</p>
       </div>
 
       {loading ? (
@@ -80,22 +80,17 @@ export default function History() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
-                {r.variants?.map((v, i) => {
-                  const key = `${r.id}-${i}`;
-                  return (
-                    <div key={i} className="p-3 rounded-lg bg-secondary/60 border border-border text-sm">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">{v.label}</span>
-                        <button onClick={() => copy(v.text, key)} className="text-muted-foreground hover:text-foreground">
-                          {copiedKey === key ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        </button>
-                      </div>
-                      <p className="line-clamp-4 leading-relaxed">{v.text}</p>
-                    </div>
-                  );
-                })}
-              </div>
+              {r.final_text && (
+                <div className="p-3 rounded-lg bg-secondary/60 border border-border text-sm">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Final reply</span>
+                    <button onClick={() => copy(r.final_text!, r.id)} className="text-muted-foreground hover:text-foreground">
+                      {copiedId === r.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                  <p className="leading-relaxed whitespace-pre-wrap">{r.final_text}</p>
+                </div>
+              )}
             </Card>
           ))}
         </div>
